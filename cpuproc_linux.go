@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shirou/gopsutil/cpu"
 	"golang.org/x/sys/unix"
 )
 
@@ -153,7 +152,7 @@ func TimesWithContext(ctx context.Context, percpu bool) ([]TimesStat, error) {
 	return ret, nil
 }
 
-func (p *proc) fillFromTIDStatWithContext(ctx context.Context, tid int32) (uint64, int32, *cpu.TimesStat, int64, uint32, int32, *PageFaultsStat, error) {
+func (p *proc) fillFromTIDStatWithContext(ctx context.Context, tid int32) (uint64, int32, *TimesStat, int64, uint32, int32, *PageFaultsStat, error) {
 	pid := p.pid
 	var statPath string
 
@@ -202,7 +201,7 @@ func (p *proc) fillFromTIDStatWithContext(ctx context.Context, tid int32) (uint6
 		iotime = 0 // e.g. SmartOS containers
 	}
 
-	cpuTimes := &cpu.TimesStat{
+	cpuTimes := &TimesStat{
 		CPU:    "cpu",
 		User:   utime / float64(clockTicks),
 		System: stime / float64(clockTicks),
@@ -259,11 +258,11 @@ func (p *proc) fillFromTIDStatWithContext(ctx context.Context, tid int32) (uint6
 	return terminal, int32(ppid), cpuTimes, createTime, uint32(rtpriority), nice, faults, nil
 }
 
-func (p *proc) fillFromStatWithContext(ctx context.Context) (uint64, int32, *cpu.TimesStat, int64, uint32, int32, *PageFaultsStat, error) {
+func (p *proc) fillFromStatWithContext(ctx context.Context) (uint64, int32, *TimesStat, int64, uint32, int32, *PageFaultsStat, error) {
 	return p.fillFromTIDStatWithContext(ctx, -1)
 }
 
-func (p *proc) TimesWithContext(ctx context.Context) (*cpu.TimesStat, error) {
+func (p *proc) TimesWithContext(ctx context.Context) (*TimesStat, error) {
 	_, _, cpuTimes, _, _, _, _, err := p.fillFromStatWithContext(ctx)
 	if err != nil {
 		return nil, err
